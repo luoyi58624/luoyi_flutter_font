@@ -1,0 +1,24 @@
+name: Publish to pub.dev
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+
+jobs:
+  publish:
+    permissions:
+      id-token: write # Required for authentication using OIDC
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - name: Check flutter version
+        run: flutter --version
+      - name: Install dependencies
+        run: flutter pub get
+      - uses: dart-lang/setup-dart@v1
+      - name: Publish luoyi_flutter_base
+        run: flutter pub publish --force
