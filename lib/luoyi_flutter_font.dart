@@ -25,6 +25,9 @@ class FlutterFont {
   /// 系统字体
   static const FlutterFontModel systemFont = FlutterFontModel(fontFamily: '');
 
+  /// 初始化的字体
+  static FlutterFontModel get initialFont => FlutterFont._initialFontModel;
+
   static late FlutterFontModel _initialFontModel;
 
   /// [_initialFontModel]本地存储键，如果用户在[init]中更改了[FlutterFontModel]，则重新加载新的字体
