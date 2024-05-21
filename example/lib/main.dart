@@ -86,8 +86,8 @@ class _HomePageState extends State<HomePage> {
               ElevatedButton(
                 onPressed: loading
                     ? null
-                    : () {
-                        FlutterFont.loadFont(FlutterFont.initialFont);
+                    : () async {
+                        await FlutterFont.loadFont(FlutterFont.initialFont);
                         fontFamily.value = FlutterFont.fontFamily;
                       },
                 child: const Text('加载初始化字体'),
