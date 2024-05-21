@@ -8,8 +8,6 @@ flutter pub add luoyi_flutter_font
 
 ### 初始化默认字体
 
-- 更新main.dart
-
 ```dart
 import 'package:flutter/material.dart';
 import 'package:luoyi_flutter_font/luoyi_flutter_font.dart';
@@ -17,15 +15,9 @@ import 'package:luoyi_flutter_font/luoyi_flutter_font.dart';
 /// 简易状态管理，保存当前选择的字体
 final ValueNotifier<String?> fontFamily = ValueNotifier<String?>(null);
 
-/// 如果使用的是系统字体，它会保存当前平台合适的字族
-List<String>? _fontFamilyFallback;
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // 初始化字体，根据不同平台加载字体，内部是调用 initFont 函数
-  // _fontFamilyFallback = await FlutterFont.init();
-  // 初始化字体，并指定谷歌中文字体为默认值，若不传则指定系统字体
-  _fontFamilyFallback = await FlutterFont.initFont(FlutterFontModel.notoSansSC);
+  await FlutterFont.init();
   fontFamily.value = FlutterFont.fontFamily;
   runApp(const _App());
 }
@@ -41,7 +33,7 @@ class _App extends StatelessWidget {
         return MaterialApp(
           theme: ThemeData(
             fontFamily: value,
-            fontFamilyFallback: _fontFamilyFallback,
+            fontFamilyFallback: FlutterFont.fontFamilyFallback,
             materialTapTargetSize: MaterialTapTargetSize.padded,
           ),
           home: const HomePage(),
@@ -51,19 +43,6 @@ class _App extends StatelessWidget {
   }
 }
 ```
-
-- pubspec.yaml添加谷歌中文字体，这是裁剪后的谷歌 NotoSansSC 字体，包含常用的3500个中文汉字
-
-```yaml
-flutter:
-  uses-material-design: true
-  fonts:
-    - family: NotoSansSC
-      fonts:
-        - asset: packages/luoyi_flutter_font/fonts/NotoSansSC/NotoSansSC-Medium.ttf
-        - asset: packages/luoyi_flutter_font/fonts/NotoSansSC/NotoSansSC-Bold.ttf
-```
-
 ### 加载动态字体
 
 ```dart
@@ -74,12 +53,6 @@ void test() {
   if (result == true) {
     fontFamily.value = FlutterFont.fontFamily;
   }
-
-  // 加载初始化时应用的字体
-  FlutterFont.loadFont(FlutterFontModel.initialFont);
-
-  // 加载谷歌 NotoSansSC 中文字体，需要引入
-  FlutterFont.loadFont(FlutterFontModel.notoSansSC);
 
   // 加载资产包中的字体，不要定义 fontUrl 和 fontWeights
   FlutterFont.loadFont(FlutterFontModel(
@@ -104,33 +77,4 @@ void test() {
 }
 ```
 
-### 库中所有预设字体，均是裁剪后的字库
 
-```yaml
-flutter:
-  uses-material-design: true
-  fonts:
-    # 谷歌开源字体，可以商用
-    - family: NotoSansSC
-      fonts:
-        - asset: packages/luoyi_flutter_font/fonts/NotoSansSC/NotoSansSC-Bold.ttf
-        - asset: packages/luoyi_flutter_font/fonts/NotoSansSC/NotoSansSC-Medium.ttf
-        - asset: packages/luoyi_flutter_font/fonts/NotoSansSC/NotoSansSC-Regular.ttf
-    # 苹方字体，Apple下的设备可以商用
-    - family: PingFang SC
-      fonts:
-        - asset: packages/luoyi_flutter_font/fonts/PingFangSC/PingFangSC-Semibold.otf
-        - asset: packages/luoyi_flutter_font/fonts/PingFangSC/PingFangSC-Medium.otf
-        - asset: packages/luoyi_flutter_font/fonts/PingFangSC/PingFangSC-Regular.otf
-    # 小米字体，可以商用
-    - family: MiSans
-      fonts:
-        - asset: packages/luoyi_flutter_font/fonts/MiSans/MiSans-Semibold.ttf
-        - asset: packages/luoyi_flutter_font/fonts/MiSans/MiSans-Medium.ttf
-    # 鸿蒙字体，可以商用
-    - family: HarmonyOS Sans SC
-      fonts:
-        - asset: packages/luoyi_flutter_font/fonts/HarmonyOS/HarmonyOS-Bold.ttf
-        - asset: packages/luoyi_flutter_font/fonts/HarmonyOS/HarmonyOS-Medium.ttf
-        - asset: packages/luoyi_flutter_font/fonts/HarmonyOS/HarmonyOS-Regular.ttf
-```

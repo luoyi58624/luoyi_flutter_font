@@ -1,6 +1,6 @@
 name: luoyi_flutter_font
 description: "flutter dynamic load font, optimize chinese font render effect"
-version: 1.0.8
+version: 1.0.9
 homepage: https://github.com/luoyi58624/luoyi_flutter_font
 
 environment:

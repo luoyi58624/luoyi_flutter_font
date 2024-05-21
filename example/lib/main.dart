@@ -7,12 +7,10 @@ import 'google_fonts.dart';
 /// 简易状态管理，保存当前选择的字体
 final ValueNotifier<String?> fontFamily = ValueNotifier<String?>(null);
 
-/// 如果使用的是系统字体，它会保存当前平台合适的字族
-List<String>? _fontFamilyFallback;
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  _fontFamilyFallback = await FlutterFont.init();
+  // await FlutterFont.initFont(GoogleFontModels.longCang());
+  await FlutterFont.init();
   await FlutterFont.initSystemFontWeight();
   fontFamily.value = FlutterFont.fontFamily;
   runApp(const _App());
@@ -29,7 +27,7 @@ class _App extends StatelessWidget {
         return MaterialApp(
           theme: ThemeData(
             fontFamily: value,
-            fontFamilyFallback: _fontFamilyFallback,
+            fontFamilyFallback: FlutterFont.fontFamilyFallback,
             materialTapTargetSize: MaterialTapTargetSize.padded,
           ),
           home: const HomePage(),

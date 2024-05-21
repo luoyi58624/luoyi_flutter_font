@@ -53,7 +53,7 @@ Future<ByteData?> generalLoadNetworkFont(
   try {
     res = await http.get(Uri.parse(fontUrl));
   } catch (error) {
-    e(error, '请求字体失败');
+    e(error, '请求字体失败，请检查网络连接或检查是否添加网络权限');
     return null;
   }
 
