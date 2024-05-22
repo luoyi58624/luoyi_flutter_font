@@ -164,7 +164,6 @@ class FlutterFont {
       FlutterFontModel localFontModel =
           FlutterFontModel.fromJson((jsonDecode(localStr) as Map).cast<String, dynamic>());
       await loadFont(localFontModel);
-      i(localFontModel.fontFamily);
     } catch (error) {
       e(error, '本地缓存字体加载异常');
       await _initFont(fontModel);
