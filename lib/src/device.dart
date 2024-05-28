@@ -94,7 +94,7 @@ class _DeviceUtil {
   static Future<void> init() async {
     if (!_isInit) {
       _isInit = true;
-      if (GetPlatform.isWeb) {
+      if (kIsWeb) {
         webInfo = await instance.webBrowserInfo;
         deviceInfo = webInfo!.data;
       } else {
