@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:luoyi_dart_base/luoyi_dart_base.dart';
 import 'package:http/http.dart' as http;
+import 'package:luoyi_dart_base/luoyi_dart_base.dart';
 import 'package:path_provider/path_provider.dart';
 
-import '../luoyi_flutter_font.dart';
+import 'font.dart';
 
 /// 是否允许加载自定义字体，不允许的平台使用系统字体
 bool getAllowLoadCustomFont({
@@ -32,7 +32,7 @@ bool getAllowLoadCustomFont({
 /// 加载字体 - 客户端环境
 Future<ByteData?> generalLoadNetworkFont(
   String fontUrl, {
-  FlutterFontModel? fontModel,
+  FontModel? fontModel,
   String? localKey,
 }) async {
   assert(fontUrl.startsWith('http'), '字体文件地址必须是网络地址');
@@ -40,7 +40,8 @@ Future<ByteData?> generalLoadNetworkFont(
   // 本地缓存的字体路径，以字族名为文件夹
   late final String localPath;
   try {
-    localPath = '${(await getApplicationSupportDirectory()).path}/$localKey.ttf';
+    localPath =
+        '${(await getApplicationSupportDirectory()).path}/$localKey.ttf';
   } catch (error) {
     e(error, '获取字体缓存路径错误');
     return null;

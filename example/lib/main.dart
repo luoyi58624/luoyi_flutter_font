@@ -2,17 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:example/large_text.dart';
 import 'package:luoyi_flutter_font/luoyi_flutter_font.dart';
 
-import 'google_fonts.dart';
-
 /// 简易状态管理，保存当前选择的字体
 final ValueNotifier<String?> fontFamily = ValueNotifier<String?>(null);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await FlutterFont.initFont(GoogleFontModels.longCang());
-  await FlutterFont.init();
-  await FlutterFont.initSystemFontWeight();
+  await FlutterFont.init(
+    android: true,
+    fontModel: FontModel.notoSansSc(),
+  );
+  // await FlutterFont.init(
+  //     // fontModel: FontModel.notoSansSc([FontWeight.w500]),
+  //     // android: true,
+  //     );
+  // await FlutterFont.initSystemFontWeight();
   fontFamily.value = FlutterFont.fontFamily;
+  // fontFamily.value = 'NotoSansSC';
   runApp(const _App());
 }
 
@@ -85,70 +90,10 @@ class _HomePageState extends State<HomePage> {
                 onPressed: loading
                     ? null
                     : () async {
-                        await FlutterFont.loadFont(FlutterFont.initialFont);
+                        await FlutterFont.loadFont(FontModel.initialFont);
                         fontFamily.value = FlutterFont.fontFamily;
                       },
                 child: const Text('加载初始化字体'),
-              ),
-              ElevatedButton(
-                onPressed: loading
-                    ? null
-                    : () async {
-                        setState(() {
-                          loading = true;
-                        });
-                        await FlutterFont.loadFont(GoogleFontModels.notoSansSc([FontWeight.w400]));
-                        fontFamily.value = FlutterFont.fontFamily;
-                        setState(() {
-                          loading = false;
-                        });
-                      },
-                child: const Text('加载 notoSansSC font:400字体'),
-              ),
-              ElevatedButton(
-                onPressed: loading
-                    ? null
-                    : () async {
-                        setState(() {
-                          loading = true;
-                        });
-                        await FlutterFont.loadFont(GoogleFontModels.notoSansSc([FontWeight.w500]));
-                        fontFamily.value = FlutterFont.fontFamily;
-                        setState(() {
-                          loading = false;
-                        });
-                      },
-                child: const Text('加载 notoSansSC font:500字体'),
-              ),
-              ElevatedButton(
-                onPressed: loading
-                    ? null
-                    : () async {
-                        setState(() {
-                          loading = true;
-                        });
-                        await FlutterFont.loadFont(GoogleFontModels.notoSansSc(FontWeight.values));
-                        fontFamily.value = FlutterFont.fontFamily;
-                        setState(() {
-                          loading = false;
-                        });
-                      },
-                child: const Text('加载 notoSansSC 字体'),
-              ),
-              ElevatedButton(
-                onPressed: loading
-                    ? null
-                    : () async {
-                        setState(() {
-                          loading = true;
-                        });
-                        await FlutterFont.loadFont(GoogleFontModels.longCang());
-                        fontFamily.value = FlutterFont.fontFamily;
-                        setState(() {
-                          loading = false;
-                        });
-                      },
-                child: const Text('加载 longCang 字体'),
               ),
               const SizedBox(height: 8),
               const Text(
@@ -182,9 +127,10 @@ class _HomePageState extends State<HomePage> {
               ...FontWeight.values.map(
                 (e) => ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(builder: (context) => LargeTextPage(fontWeight: e)));
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => LargeTextPage(fontWeight: e)));
                   },
-                  child: Text('$e 大文本页面'),
+                  child: Text('${e.value} 大文本页面'),
                 ),
               ),
             ],
