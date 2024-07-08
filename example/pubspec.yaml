@@ -23,5 +23,5 @@ flutter:
   fonts:
     - family: NotoSansSC
       fonts:
-        - asset: packages/luoyi_flutter_font/chinese/NotoSansSC-Medium.ttf
-        - asset: packages/luoyi_flutter_font/chinese/NotoSansSC-Bold.ttf
+        - asset: packages/luoyi_flutter_font/fonts/NotoSansSC/Medium.ttf
+        - asset: packages/luoyi_flutter_font/fonts/NotoSansSC/Bold.ttf

@@ -32,7 +32,7 @@ bool getAllowLoadCustomFont({
 /// 加载字体 - 客户端环境
 Future<ByteData?> generalLoadNetworkFont(
   String fontUrl, {
-  FontModel? fontModel,
+  FlutterFontModel? fontModel,
   String? localKey,
 }) async {
   assert(fontUrl.startsWith('http'), '字体文件地址必须是网络地址');

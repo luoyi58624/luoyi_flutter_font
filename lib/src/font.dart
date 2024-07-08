@@ -10,10 +10,7 @@ import 'font_web.dart' if (dart.library.io) 'font_io.dart';
 
 part 'model.dart';
 
-late FontModel initialFontModel;
-
-/// 当前加载的全局字体模型
-FontModel currentFontModel = FontModel.systemFont;
+part 'preset.dart';
 
 /// [fontFamily]本地存储键
 const String _localKey = 'font_family';
@@ -30,78 +27,18 @@ HashSet<String> get loadFonts => _loadFonts;
 class FlutterFont {
   FlutterFont._();
 
+  /// 初始化的字体
+  static FlutterFontModel _initialFont = FlutterFontPreset.systemFont;
+
+  /// 当前加载的全局字体模型
+  static FlutterFontModel _currentFontModel = FlutterFontPreset.systemFont;
+
   /// 当前选择的全局字体，null 表示系统字体，当调用[loadFont]函数加载新字体成功时，此变量将会指向新字体的fontFamily
   static String? get fontFamily =>
-      currentFontModel.fontFamily == '' ? null : currentFontModel.fontFamily;
-
-  /// 基础字重字体
-  static FontWeight get normal =>
-      fontFamily == null ? (_normal ?? FontWeight.normal) : FontWeight.normal;
-
-  /// 中等字重字体
-  static FontWeight get medium =>
-      fontFamily == null ? (_medium ?? FontWeight.w500) : FontWeight.w500;
-
-  /// 粗体字重字体
-  static FontWeight get bold =>
-      fontFamily == null ? (_bold ?? FontWeight.bold) : FontWeight.bold;
-
-  /// 初始化字体，但会根据不同平台加载字体，如果你需要将某个字体直接应用所有平台，请使用[initFont]
-  /// * web canvaskit - fontModel
-  ///
-  /// * android - 系统字体
-  /// * android web html - 系统字体
-  ///
-  /// * ios - 系统字体
-  /// * ios web html - 系统字体
-  ///
-  /// * windows - fontModel
-  /// * windows web html - fontModel
-  ///
-  /// * macos - 系统字体
-  /// * macos web html - 系统字体
-  ///
-  /// * linux - fontModel
-  /// * linux web html - fontModel
-  static Future<void> init({
-    FontModel? fontModel,
-    bool canvaskit = true,
-    bool android = false,
-    bool androidWeb = false,
-    bool ios = false,
-    bool iosWeb = false,
-    bool macos = false,
-    bool macosWeb = false,
-    bool windows = true,
-    bool windowsWeb = true,
-    bool linux = true,
-    bool linuxWeb = true,
-  }) async {
-    bool allowLoadCustomFont = getAllowLoadCustomFont(
-      canvaskit: canvaskit,
-      android: android,
-      androidWeb: androidWeb,
-      ios: ios,
-      iosWeb: iosWeb,
-      macos: macos,
-      macosWeb: macosWeb,
-      windows: windows,
-      windowsWeb: windowsWeb,
-      linux: linux,
-      linuxWeb: linuxWeb,
-    );
-    if (allowLoadCustomFont) {
-      i(fontModel?.fontWeights);
-      fontModel != null && fontModel.fontFamily != ''
-          ? await initFont(fontModel)
-          : await initFont(FontModel.notoSansSc([FontWeight.w500]));
-    } else {
-      await initFont(FontModel.systemFont);
-    }
-  }
+      _currentFontModel.fontFamily == '' ? null : _currentFontModel.fontFamily;
 
   /// 初始化全局默认字体
-  static Future<void> initFont(FontModel fontModel) async {
+  static Future<void> initFont(FlutterFontModel fontModel) async {
     await initLocalStorage();
     var localStr = localStorage.getItem(_localKey);
 
@@ -113,22 +50,21 @@ class FlutterFont {
     var initialLocalStr = localStorage.getItem(_initialLocalKey);
 
     if (initialLocalStr == null) {
-      initialFontModel = fontModel;
-      localStorage.setItem(
-          _initialLocalKey, jsonEncode(initialFontModel.toJson()));
+      _initialFont = fontModel;
+      localStorage.setItem(_initialLocalKey, jsonEncode(_initialFont.toJson()));
     } else {
-      initialFontModel = FontModel.fromJson(
+      _initialFont = FlutterFontModel.fromJson(
           (jsonDecode(initialLocalStr) as Map).cast<String, dynamic>());
-      if (initialFontModel.fontFamily != fontModel.fontFamily) {
-        initialFontModel = fontModel;
+      if (_initialFont.fontFamily != fontModel.fontFamily) {
+        _initialFont = fontModel;
         localStorage.setItem(
-            _initialLocalKey, jsonEncode(initialFontModel.toJson()));
+            _initialLocalKey, jsonEncode(_initialFont.toJson()));
         return await _initFont(fontModel);
       }
     }
 
     try {
-      FontModel localFontModel = FontModel.fromJson(
+      FlutterFontModel localFontModel = FlutterFontModel.fromJson(
           (jsonDecode(localStr) as Map).cast<String, dynamic>());
       await loadFont(localFontModel);
     } catch (error) {
@@ -137,7 +73,7 @@ class FlutterFont {
     }
   }
 
-  static Future<void> _initFont(FontModel fontModel) async {
+  static Future<void> _initFont(FlutterFontModel fontModel) async {
     bool success = await loadFont(fontModel);
     if (success) {
       localStorage.setItem(_initialLocalKey, jsonEncode(fontModel.toJson()));
@@ -160,12 +96,12 @@ class FlutterFont {
   ///
   /// 注意：此函数不会更新你的页面，你应当使用状态管理保存当前选中的字体，
   /// 每次加载完字体后通过[FontUtil.fontFamily]变量更新你的状态
-  static Future<bool> loadFont([FontModel? fontModel]) async {
-    fontModel ??= FontModel.systemFont;
+  static Future<bool> loadFont([FlutterFontModel? fontModel]) async {
+    fontModel ??= FlutterFontPreset.systemFont;
     // 如果加载的fontUrl、fontWeights都为空，则那么跳过网络解析
     if (fontModel.fontUrl == null &&
         (fontModel.fontWeights == null || fontModel.fontWeights!.isEmpty)) {
-      currentFontModel = fontModel;
+      _currentFontModel = fontModel;
       localStorage.setItem(_localKey, jsonEncode(fontModel.toJson()));
       _loadFonts.add(fontModel.fontFamily);
       return true;
@@ -203,62 +139,11 @@ class FlutterFont {
       if (!(await _loadFont(fontModel.fontFamily, fontByteDataList))) {
         return false;
       }
-      currentFontModel = fontModel;
+      _currentFontModel = fontModel;
       localStorage.setItem(_localKey, jsonEncode(fontModel.toJson()));
       _loadFonts.addAll(fontFamilyList);
       return true;
     }
-  }
-
-  /// 当使用系统字体时，优化某些设备的[FontWeight]，例如：
-  /// * 小米 - normal: w500
-  /// * 华为 - bold: w600
-  ///
-  /// 提示：此函数是可选的，它只作用于[FontUtil.normal]、[FontUtil.medium]、[FontUtil.bold]等变量
-  static Future<void> initSystemFontWeight({
-    FontWeight? normal,
-    FontWeight? medium,
-    FontWeight? bold,
-  }) async {
-    // if (kIsWeb) return;
-    // await DeviceUtil.init();
-    // __normal = normal;
-    // __medium = medium;
-    // __bold = bold;
-    // if (PlatformUtil.isAndroid) {
-    //   // 小米手机400字重太细了，将normal设置为500
-    //   if (DeviceUtil.isXiaomi) {
-    //     _setFontWeight(FontWeight.w500, FontWeight.w500, FontWeight.bold);
-    //   }
-    //   // 华为手机700字重太重了，将bold设置为600
-    //   else if (DeviceUtil.isHUAWEI) {
-    //     _setFontWeight(FontWeight.w400, FontWeight.w500, FontWeight.w600);
-    //   }
-    // }
-    // // Windows平台不包含w500字重，中等字重调整为400
-    // else if (PlatformUtil.isWindows) {
-    //   _setFontWeight(FontWeight.normal, FontWeight.normal, FontWeight.bold);
-    // }
-  }
-
-  /// 如果是系统字体，使用的 normal 字重，如果执行了[initSystemFontWeight]，该值会在部分设备上使用[FontWeight.w500]字重
-  static FontWeight? _normal;
-
-  /// 如果是系统字体，使用的 w500 字重，如果执行了[initSystemFontWeight]，该值会在部分设备上使用[FontWeight.w400]字重
-  static FontWeight? _medium;
-
-  /// 如果是系统字体，使用的 bold 字重，如果执行了[initSystemFontWeight]，会在部分设备上使用[FontWeight.w600]字重
-  static FontWeight? _bold;
-
-  static FontWeight? __normal;
-  static FontWeight? __medium;
-  static FontWeight? __bold;
-
-  static void _setFontWeight(
-      FontWeight normalFont, FontWeight mediumFont, FontWeight boldFont) {
-    _normal = __normal ?? normalFont;
-    _medium = __medium ?? mediumFont;
-    _bold = __bold ?? boldFont;
   }
 }
 

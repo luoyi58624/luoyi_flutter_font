@@ -7,17 +7,8 @@ final ValueNotifier<String?> fontFamily = ValueNotifier<String?>(null);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await FlutterFont.init(
-    android: true,
-    fontModel: FontModel.notoSansSc(),
-  );
-  // await FlutterFont.init(
-  //     // fontModel: FontModel.notoSansSc([FontWeight.w500]),
-  //     // android: true,
-  //     );
-  // await FlutterFont.initSystemFontWeight();
+  await FlutterFont.initFont(FlutterFontPreset.notoSansSC);
   fontFamily.value = FlutterFont.fontFamily;
-  // fontFamily.value = 'NotoSansSC';
   runApp(const _App());
 }
 
@@ -90,7 +81,8 @@ class _HomePageState extends State<HomePage> {
                 onPressed: loading
                     ? null
                     : () async {
-                        await FlutterFont.loadFont(FontModel.initialFont);
+                        await FlutterFont.loadFont(
+                            FlutterFontPreset.initialFont);
                         fontFamily.value = FlutterFont.fontFamily;
                       },
                 child: const Text('加载初始化字体'),
