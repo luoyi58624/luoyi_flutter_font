@@ -1,4 +1,4 @@
-优化flutter中文字体渲染问题，动态从网络加载字体，此库仅作用于加载全局字体
+优化flutter中文字体渲染问题，动态从资产包、网络加载字体，此库仅作用于全局字体，如果你需要应用局部字体请使用google_fonts
 
 ### 安装依赖
 
@@ -6,19 +6,28 @@
 flutter pub add luoyi_flutter_font
 ```
 
+### 添加中文字体文件
+
+```yaml
+flutter:
+  fonts:
+    - family: NotoSansSC
+      fonts:
+        - asset: packages/luoyi_flutter_font/fonts/NotoSansSC/700.ttf
+        - asset: packages/luoyi_flutter_font/fonts/NotoSansSC/500.ttf
+```
+
 ### 初始化默认字体
 
 ```dart
 import 'package:flutter/material.dart';
 import 'package:luoyi_flutter_font/luoyi_flutter_font.dart';
-
-/// 简易状态管理，保存当前选择的字体
-final ValueNotifier<String?> fontFamily = ValueNotifier<String?>(null);
+import 'package:flutter_obs/flutter_obs.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await FlutterFont.init();
-  fontFamily.value = FlutterFont.fontFamily;
+  // 初始化字体
+  await FlutterFont.initFont(FontPreset.notoSansSC);
   runApp(const _App());
 }
 
@@ -27,46 +36,43 @@ class _App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: fontFamily,
-      builder: (context, value, child) {
-        return MaterialApp(
-          theme: ThemeData(
-            fontFamily: value,
-            fontFamilyFallback: FlutterFont.fontFamilyFallback,
-            materialTapTargetSize: MaterialTapTargetSize.padded,
-          ),
-          home: const HomePage(),
-        );
-      },
+    return MaterialApp(
+      theme: ThemeData(
+        // 设置字族名
+        fontFamily: FlutterFont.fontFamily,
+      ),
+      home: const HomePage(),
     );
   }
 }
 ```
+
 ### 加载动态字体
+
+- 注意你需要使用状态管理来更新 App 的 fontFamily，字体加载成功后会返回一个bool值，
+- 将 FlutterFont.fontFamily 应用到当前状态即可。
 
 ```dart
 void test() {
-  // 调用loadFont函数动态加载字体，根据结果刷新页面状态
-  // 加载系统字体
-  bool result = FlutterFont.loadFont(FlutterFontModel.systemFont);
-  if (result == true) {
-    fontFamily.value = FlutterFont.fontFamily;
-  }
+  // 加载系统字体，实际上就是指定fontFamily = ''
+  FlutterFont.loadFont(FontPreset.systemFont);
+
+  // 加载项目初始化的字体
+  FlutterFont.loadFont(FontPreset.initialFont);
 
   // 加载资产包中的字体，不要定义 fontUrl 和 fontWeights
-  FlutterFont.loadFont(FlutterFontModel(
+  FlutterFont.loadFont(FontModel(
     fontFamily: 'my_font',
   ));
 
-  // 加载在线字体
-  FlutterFont.loadFont(FlutterFontModel(
+  // 加载在线字体，如果是客户端，加载成功后会缓存到本地
+  FlutterFont.loadFont(FontModel(
     fontFamily: 'LongCang',
     fontUrl: 'https://fonts.gstatic.com/s/a/f626a05f45d156332017025fc68902a92f57f51ac57bb4a79097ee7bb1a97352.ttf',
   ));
 
   // 加载多种字重在线字体
-  FlutterFont.loadFont(FlutterFontModel(
+  FlutterFont.loadFont(FontModel(
     fontFamily: 'NotoSansSC',
     fontWeights: {
       400: 'https://fonts.gstatic.com/s/a/eacedb2999b6cd30457f3820f277842f0dfbb28152a246fca8161779a8945425.ttf',

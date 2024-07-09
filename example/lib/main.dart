@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:example/large_text.dart';
+import 'package:flutter_obs/flutter_obs.dart';
 import 'package:luoyi_flutter_font/luoyi_flutter_font.dart';
-
-/// 简易状态管理，保存当前选择的字体
-final ValueNotifier<String?> fontFamily = ValueNotifier<String?>(null);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await FlutterFont.initFont(FlutterFontPreset.notoSansSC);
-  fontFamily.value = FlutterFont.fontFamily;
+  await FlutterFont.initFont(FontPreset.notoSansSC);
   runApp(const _App());
 }
 
@@ -17,19 +14,16 @@ class _App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: fontFamily,
-      builder: (context, value, child) {
-        return MaterialApp(
-          theme: ThemeData(
-            fontFamily: value,
-            fontFamilyFallback: FlutterFont.fontFamilyFallback,
-            materialTapTargetSize: MaterialTapTargetSize.padded,
-          ),
-          home: const HomePage(),
-        );
-      },
-    );
+    return ObsBuilder(builder: (context) {
+      return MaterialApp(
+        theme: ThemeData(
+          fontFamily: FlutterFont.fontFamily,
+          fontFamilyFallback: FlutterFont.fontFamilyFallback,
+          materialTapTargetSize: MaterialTapTargetSize.padded,
+        ),
+        home: const HomePage(),
+      );
+    });
   }
 }
 
@@ -49,12 +43,9 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: ValueListenableBuilder(
-          valueListenable: fontFamily,
-          builder: (context, value, child) {
-            return Text('动态字体 - ${value ?? '系统字体'}');
-          },
-        ),
+        title: ObsBuilder(builder: (context) {
+          return Text('动态字体 - ${FlutterFont.fontFamily ?? '系统字体'}');
+        }),
       ),
       body: SingleChildScrollView(
         child: Center(
@@ -73,7 +64,6 @@ class _HomePageState extends State<HomePage> {
                     ? null
                     : () {
                         FlutterFont.loadFont();
-                        fontFamily.value = FlutterFont.fontFamily;
                       },
                 child: const Text('加载系统字体'),
               ),
@@ -81,9 +71,8 @@ class _HomePageState extends State<HomePage> {
                 onPressed: loading
                     ? null
                     : () async {
-                        await FlutterFont.loadFont(
-                            FlutterFontPreset.initialFont);
-                        fontFamily.value = FlutterFont.fontFamily;
+                        await FlutterFont.loadFont(FontPreset.initialFont);
+                        print(FlutterFont.fontFamily);
                       },
                 child: const Text('加载初始化字体'),
               ),
@@ -109,7 +98,7 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 8),
               ...FontWeight.values.map(
                 (e) => Text(
-                  '$e: $_simpleText',
+                  '${e.value}: $_simpleText',
                   style: TextStyle(
                     fontWeight: e,
                   ),

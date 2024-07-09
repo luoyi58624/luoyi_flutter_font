@@ -1,3 +1,4 @@
+import 'package:flutter_obs/flutter_obs.dart';
 import 'package:luoyi_dart_base/luoyi_dart_base.dart';
 
 import 'dart:collection';
@@ -20,25 +21,23 @@ const String _initialLocalKey = 'initial_font_family';
 
 final HashSet<String> _loadFonts = HashSet();
 
-/// 已加载的字体
-HashSet<String> get loadFonts => _loadFonts;
-
 /// Flutter字体工具类
 class FlutterFont {
   FlutterFont._();
 
   /// 初始化的字体
-  static FlutterFontModel _initialFont = FlutterFontPreset.systemFont;
+  static FontModel _initialFont = FontPreset.systemFont;
 
   /// 当前加载的全局字体模型
-  static FlutterFontModel _currentFontModel = FlutterFontPreset.systemFont;
+  static final Obs<FontModel> _currentFontModel = Obs(FontPreset.systemFont);
 
-  /// 当前选择的全局字体，null 表示系统字体，当调用[loadFont]函数加载新字体成功时，此变量将会指向新字体的fontFamily
-  static String? get fontFamily =>
-      _currentFontModel.fontFamily == '' ? null : _currentFontModel.fontFamily;
+  /// 当前选择的全局字体，null 表示系统字体
+  static String? get fontFamily => _currentFontModel.value.fontFamily == ''
+      ? null
+      : _currentFontModel.value.fontFamily;
 
   /// 初始化全局默认字体
-  static Future<void> initFont(FlutterFontModel fontModel) async {
+  static Future<void> initFont(FontModel fontModel) async {
     await initLocalStorage();
     var localStr = localStorage.getItem(_localKey);
 
@@ -53,7 +52,7 @@ class FlutterFont {
       _initialFont = fontModel;
       localStorage.setItem(_initialLocalKey, jsonEncode(_initialFont.toJson()));
     } else {
-      _initialFont = FlutterFontModel.fromJson(
+      _initialFont = FontModel.fromJson(
           (jsonDecode(initialLocalStr) as Map).cast<String, dynamic>());
       if (_initialFont.fontFamily != fontModel.fontFamily) {
         _initialFont = fontModel;
@@ -64,7 +63,7 @@ class FlutterFont {
     }
 
     try {
-      FlutterFontModel localFontModel = FlutterFontModel.fromJson(
+      FontModel localFontModel = FontModel.fromJson(
           (jsonDecode(localStr) as Map).cast<String, dynamic>());
       await loadFont(localFontModel);
     } catch (error) {
@@ -73,22 +72,10 @@ class FlutterFont {
     }
   }
 
-  static Future<void> _initFont(FlutterFontModel fontModel) async {
+  static Future<void> _initFont(FontModel fontModel) async {
     bool success = await loadFont(fontModel);
     if (success) {
       localStorage.setItem(_initialLocalKey, jsonEncode(fontModel.toJson()));
-    }
-  }
-
-  /// 字体族列表，当我们的[fontFamily]为空时，flutter会根据此列表依次匹配字体
-  static List<String>? get fontFamilyFallback {
-    // 在 mac 上若不指定苹方字体，那么中文字重将失效
-    if (PlatformUtil.isMacOS || PlatformUtil.isIOS) {
-      return ['.AppleSystemUIFont', 'PingFang SC'];
-    } else if (PlatformUtil.isWindows) {
-      return ['Microsoft YaHei', '微软雅黑'];
-    } else {
-      return null;
     }
   }
 
@@ -96,12 +83,12 @@ class FlutterFont {
   ///
   /// 注意：此函数不会更新你的页面，你应当使用状态管理保存当前选中的字体，
   /// 每次加载完字体后通过[FontUtil.fontFamily]变量更新你的状态
-  static Future<bool> loadFont([FlutterFontModel? fontModel]) async {
-    fontModel ??= FlutterFontPreset.systemFont;
+  static Future<bool> loadFont([FontModel? fontModel]) async {
+    fontModel ??= FontPreset.systemFont;
     // 如果加载的fontUrl、fontWeights都为空，则那么跳过网络解析
     if (fontModel.fontUrl == null &&
         (fontModel.fontWeights == null || fontModel.fontWeights!.isEmpty)) {
-      _currentFontModel = fontModel;
+      _currentFontModel.value = fontModel;
       localStorage.setItem(_localKey, jsonEncode(fontModel.toJson()));
       _loadFonts.add(fontModel.fontFamily);
       return true;
@@ -110,7 +97,7 @@ class FlutterFont {
       List<ByteData> fontByteDataList = [];
       if (fontModel.fontUrl != null) {
         // 如果当前字体已加载，那么跳过网络解析
-        if (!loadFonts.contains(fontModel.fontFamily)) {
+        if (!_loadFonts.contains(fontModel.fontFamily)) {
           var result = await generalLoadNetworkFont(fontModel.fontUrl!);
           // 加载网络字体失败，返回false结束运行
           if (result == null) return false;
@@ -120,7 +107,7 @@ class FlutterFont {
       } else {
         List<int> needLoadFonts = [];
         for (int key in fontModel.fontWeights!.keys) {
-          if (!loadFonts.contains('${fontModel.fontFamily}_$key')) {
+          if (!_loadFonts.contains('${fontModel.fontFamily}_$key')) {
             needLoadFonts.add(key);
           }
         }
@@ -139,10 +126,22 @@ class FlutterFont {
       if (!(await _loadFont(fontModel.fontFamily, fontByteDataList))) {
         return false;
       }
-      _currentFontModel = fontModel;
+      _currentFontModel.value = fontModel;
       localStorage.setItem(_localKey, jsonEncode(fontModel.toJson()));
       _loadFonts.addAll(fontFamilyList);
       return true;
+    }
+  }
+
+  /// 字体族列表，当我们的[fontFamily]为空时，flutter会根据此列表依次匹配字体
+  static List<String>? get fontFamilyFallback {
+    // 在 mac 上若不指定苹方字体，那么中文字重将失效
+    if (PlatformUtil.isMacOS || PlatformUtil.isIOS) {
+      return ['.AppleSystemUIFont', 'PingFang SC'];
+    } else if (PlatformUtil.isWindows) {
+      return ['Microsoft YaHei', '微软雅黑'];
+    } else {
+      return null;
     }
   }
 }

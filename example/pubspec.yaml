@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   luoyi_dart_base: ^1.9.0
+  flutter_obs: ^1.0.0
   luoyi_flutter_font:
     path: ..
 

@@ -7,36 +7,13 @@ import 'package:path_provider/path_provider.dart';
 
 import 'font.dart';
 
-/// 是否允许加载自定义字体，不允许的平台使用系统字体
-bool getAllowLoadCustomFont({
-  bool canvaskit = true,
-  bool android = false,
-  bool androidWeb = false,
-  bool ios = false,
-  bool iosWeb = false,
-  bool macos = false,
-  bool macosWeb = false,
-  bool windows = true,
-  bool windowsWeb = true,
-  bool linux = true,
-  bool linuxWeb = true,
-}) {
-  if (Platform.isAndroid && android) return true;
-  if (Platform.isIOS && ios) return true;
-  if (Platform.isMacOS && macos) return true;
-  if (Platform.isWindows && windows) return true;
-  if (Platform.isLinux && linux) return true;
-  return false;
-}
-
 /// 加载字体 - 客户端环境
 Future<ByteData?> generalLoadNetworkFont(
   String fontUrl, {
-  FlutterFontModel? fontModel,
+  FontModel? fontModel,
   String? localKey,
 }) async {
   assert(fontUrl.startsWith('http'), '字体文件地址必须是网络地址');
-
   // 本地缓存的字体路径，以字族名为文件夹
   late final String localPath;
   try {
