@@ -1,3 +1,7 @@
+## 1.1.4
+
+* chore: 移除fontFamilyFallback
+
 ## 1.1.3
 
 * feat: 添加响应式变量指向fontFamily

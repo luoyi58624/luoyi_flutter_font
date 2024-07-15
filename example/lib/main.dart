@@ -18,7 +18,6 @@ class _App extends StatelessWidget {
       return MaterialApp(
         theme: ThemeData(
           fontFamily: FlutterFont.fontFamily,
-          fontFamilyFallback: FlutterFont.fontFamilyFallback,
           materialTapTargetSize: MaterialTapTargetSize.padded,
         ),
         home: const HomePage(),

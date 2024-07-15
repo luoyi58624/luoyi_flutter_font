@@ -24,7 +24,7 @@ Future<ByteData?> generalLoadNetworkFont(
     return null;
   }
 
-  ByteData? byteData = await _loadLocalFont(localPath);
+  ByteData? byteData = _loadLocalFont(localPath);
   if (byteData != null) return byteData;
 
   http.Response? res;
@@ -35,18 +35,18 @@ Future<ByteData?> generalLoadNetworkFont(
     return null;
   }
 
-  bool result = await _saveLocalFont(localPath, res.bodyBytes);
+  bool result = _saveLocalFont(localPath, res.bodyBytes);
   if (!result) return null;
 
   return ByteData.view(res.bodyBytes.buffer);
 }
 
 /// 加载本地字体
-Future<ByteData?> _loadLocalFont(String localPath) async {
+ByteData? _loadLocalFont(String localPath) {
   try {
     final file = File(localPath);
     if (file.existsSync()) {
-      List<int> contents = await file.readAsBytes();
+      List<int> contents = file.readAsBytesSync();
       if (contents.isNotEmpty) {
         return ByteData.view(Uint8List.fromList(contents).buffer);
       }
@@ -59,11 +59,11 @@ Future<ByteData?> _loadLocalFont(String localPath) async {
 }
 
 /// 保存字体到本地
-Future<bool> _saveLocalFont(String localPath, List<int> byteData) async {
+bool _saveLocalFont(String localPath, List<int> byteData) {
   try {
     File file = File(localPath);
     if (!file.existsSync()) file.createSync(recursive: true);
-    await file.writeAsBytes(byteData);
+    file.writeAsBytesSync(byteData);
     return true;
   } catch (error) {
     e(error, '保存本地缓存字体错误');
